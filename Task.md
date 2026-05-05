@@ -13,7 +13,7 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
 - Minecraft: `1.21.8`
 - Yarn mappings: `1.21.8+build.1`
 - Fabric API: `0.136.1+1.21.8`
-- Fabric Loader: `0.19.2`
+- Fabric Loader: `0.18.4`
 - Java: `21`
 - Gradle distribution planned in wrapper: `8.14.3`
 - Archive base name: `downed-players-lastchance-fabric-1.21.8`
@@ -196,6 +196,10 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
   - artifact id `6807136577`
   - digest `sha256:4303aaf35c69fa45e7e9ae70bbec9ea966ae1dfaa2a1bebd9540b880b566d7d3`
   - expires `2026-08-03T13:07:47Z`
+- Adjusted the Fabric Loader requirement to match the tested ElyPrismLauncher instance:
+  - `gradle.properties` `loader_version=0.18.4`
+  - `fabric.mod.json` `fabricloader >=0.18.4`
+  - This addresses the launcher error where Fabric Loader `0.18.4` rejected the mod because it required `>=0.19.2`.
 
 ## Current Stop Point
 
