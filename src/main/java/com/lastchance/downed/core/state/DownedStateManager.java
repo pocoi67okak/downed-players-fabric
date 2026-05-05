@@ -8,13 +8,13 @@ import com.lastchance.downed.mixin.EntityAccessor;
 import com.lastchance.downed.network.payload.ReviveProgressPayload;
 import com.lastchance.downed.network.payload.StateSyncPayload;
 import com.lastchance.downed.screen.gui.DownedLootInventory;
+import com.lastchance.downed.screen.gui.DownedLootScreenHandler;
 import com.lastchance.downed.util.DownedText;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -262,7 +262,7 @@ public final class DownedStateManager {
         lootLocks.put(target.getUuid(), looter.getUuid());
         DownedLootInventory inventory = new DownedLootInventory(target, () -> releaseLootLock(target.getUuid(), looter.getUuid()));
         looter.openHandledScreen(new SimpleNamedScreenHandlerFactory(
-                (syncId, playerInventory, player) -> GenericContainerScreenHandler.createGeneric9x6(syncId, playerInventory, inventory),
+                (syncId, playerInventory, player) -> new DownedLootScreenHandler(syncId, playerInventory, inventory),
                 Text.literal(target.getName().getString() + "'s inventory")
         ));
     }
@@ -344,7 +344,14 @@ public final class DownedStateManager {
                 continue;
             }
 
-            sendReviveProgress(reviver, true, reviveProgress(session, now));
+            float progress = reviveProgress(session, now);
+            if (progress >= 1.0F) {
+                iterator.remove();
+                completeRevive(reviver, target);
+                continue;
+            }
+
+            sendReviveProgress(reviver, true, progress);
         }
     }
 

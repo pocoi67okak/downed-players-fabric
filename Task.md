@@ -17,7 +17,7 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
 - Java: `21`
 - Gradle distribution planned in wrapper: `8.14.3`
 - Archive base name: `downed-players-lastchance-fabric-1.21.8`
-- Current mod version: `2.0.0`
+- Current mod version: `3.0.0`
 
 ## What Was Completed Before Stop
 

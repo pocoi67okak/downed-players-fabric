@@ -3,10 +3,12 @@ package com.lastchance.downed.screen.gui;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public final class DownedLootInventory implements Inventory {
     private static final int GENERIC_9X6_SIZE = 54;
+    private static final ItemStack PLACEHOLDER = new ItemStack(Items.LIGHT_GRAY_STAINED_GLASS_PANE);
 
     private final ServerPlayerEntity target;
     private final Runnable closeCallback;
@@ -34,7 +36,7 @@ public final class DownedLootInventory implements Inventory {
 
     @Override
     public ItemStack getStack(int slot) {
-        return isBackedSlot(slot) ? target.getInventory().getStack(slot) : ItemStack.EMPTY;
+        return isBackedSlot(slot) ? target.getInventory().getStack(slot) : PLACEHOLDER.copy();
     }
 
     @Override
@@ -52,6 +54,11 @@ public final class DownedLootInventory implements Inventory {
         if (isBackedSlot(slot)) {
             target.getInventory().setStack(slot, stack);
         }
+    }
+
+    @Override
+    public boolean isValid(int slot, ItemStack stack) {
+        return isBackedSlot(slot) && target.getInventory().isValid(slot, stack);
     }
 
     @Override
@@ -74,7 +81,7 @@ public final class DownedLootInventory implements Inventory {
         target.getInventory().clear();
     }
 
-    private boolean isBackedSlot(int slot) {
+    public boolean isBackedSlot(int slot) {
         return slot >= 0 && slot < target.getInventory().size();
     }
 }

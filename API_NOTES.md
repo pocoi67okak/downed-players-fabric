@@ -7,7 +7,7 @@ This file records the local Yarn/Fabric API lookups already done for this projec
 - Minecraft: `1.21.8`
 - Yarn mappings: `1.21.8+build.1`
 - Fabric API: `0.136.1+1.21.8`
-- Fabric Loader: `0.19.2`
+- Fabric Loader: `0.18.4`
 - Java: `21`
 - Gradle wrapper target: `8.14.3`
 
