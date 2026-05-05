@@ -17,6 +17,7 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
 - Java: `21`
 - Gradle distribution planned in wrapper: `8.14.3`
 - Archive base name: `downed-players-lastchance-fabric-1.21.8`
+- Current mod version: `2.0.0`
 
 ## What Was Completed Before Stop
 
@@ -200,6 +201,9 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
   - `gradle.properties` `loader_version=0.18.4`
   - `fabric.mod.json` `fabricloader >=0.18.4`
   - This addresses the launcher error where Fabric Loader `0.18.4` rejected the mod because it required `>=0.19.2`.
+- Changed revive progress to be server-timed once started instead of requiring continuous client heartbeat packets:
+  - This avoids revive cancellation when the client loses crosshair `EntityHitResult` on a downed/sleeping player.
+  - Bumped `mod_version` to `2.0.0`.
 
 ## Current Stop Point
 

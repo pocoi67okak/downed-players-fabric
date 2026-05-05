@@ -41,7 +41,6 @@ public final class DownedStateManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path STATE_PATH = FabricLoader.getInstance().getConfigDir().resolve("downed_players_state.json");
     private static final DownedStateManager INSTANCE = new DownedStateManager();
-    private static final long REVIVE_HEARTBEAT_GRACE_MILLIS = 750L;
 
     private final Map<UUID, DownedState> downed = new HashMap<>();
     private final Map<UUID, ReviveSession> reviveSessions = new HashMap<>();
@@ -339,8 +338,7 @@ public final class DownedStateManager {
             ServerPlayerEntity reviver = server.getPlayerManager().getPlayer(session.reviverUuid());
             ServerPlayerEntity target = server.getPlayerManager().getPlayer(session.targetUuid());
 
-            if (reviver == null || target == null || !canRevive(reviver, target)
-                    || now - session.lastHeartbeatMillis > REVIVE_HEARTBEAT_GRACE_MILLIS) {
+            if (reviver == null || target == null || !canRevive(reviver, target)) {
                 sendReviveProgress(session.reviverUuid(), false, 0.0F);
                 iterator.remove();
                 continue;
