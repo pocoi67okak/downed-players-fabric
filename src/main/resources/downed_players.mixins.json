@@ -3,7 +3,6 @@
   "package": "com.lastchance.downed.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "EntityDamageMixin",
     "EntityAccessor",
     "ItemEntityMixin",
     "LivingEntityMixin",
