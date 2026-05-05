@@ -204,18 +204,29 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
 - Changed revive progress to be server-timed once started instead of requiring continuous client heartbeat packets:
   - This avoids revive cancellation when the client loses crosshair `EntityHitResult` on a downed/sleeping player.
   - Bumped `mod_version` to `2.0.0`.
+- Confirmed GitHub Actions build succeeded after the revive/version change:
+  - commit `927c03f Make revive progress server timed`
+  - run id `25380059174`
+  - URL `https://github.com/pocoi67okak/downed-players-fabric/actions/runs/25380059174`
+  - head SHA `927c03f0e93db96379cdf11cb07f4ce09aa71706`
+- Confirmed uploaded `2.0.0` Actions artifact:
+  - name `downed-players-lastchance-fabric-1.21.8`
+  - expected jar name `downed-players-lastchance-fabric-1.21.8-2.0.0.jar`
+  - artifact id `6807918058`
+  - digest `sha256:1e0aab835bbdbf8b8784c5e41ce7824659d84e36a1e73152acf6730f563f9447`
+  - expires `2026-08-03T13:43:06Z`
 
 ## Current Stop Point
 
-Core implementation files now exist, are pushed to GitHub, and GitHub Actions builds successfully.
+Core implementation files now exist, are pushed to GitHub, and GitHub Actions builds successfully at mod version `2.0.0`.
 
-The next practical step, if more work is requested, is in-game QA on a Fabric 1.21.8 server/client using the Actions artifact. No local Gradle build was run.
+The latest practical stop point is runtime QA of artifact `downed-players-lastchance-fabric-1.21.8-2.0.0.jar` in the user's ElyPrismLauncher Fabric 1.21.8 instance.
 
 No local Gradle build was run.
 
 The local git repository exists, branch `main` tracks `origin/main`, and the GitHub repository exists at `https://github.com/pocoi67okak/downed-players-fabric`.
 
-GitHub Actions run `25378248828` completed successfully and uploaded the mod artifact.
+GitHub Actions run `25380059174` completed successfully and uploaded the `2.0.0` mod artifact.
 
 ## Important Implementation Notes Already Discovered
 
@@ -237,8 +248,13 @@ GitHub Actions run `25378248828` completed successfully and uploaded the mod art
 
 ## Remaining Work
 
-1. Optional: perform in-game QA on a Fabric 1.21.8 server/client with the uploaded Actions artifact.
-2. Optional: address any gameplay bugs found during runtime testing with follow-up commits and GitHub Actions builds.
+1. Install/test artifact `downed-players-lastchance-fabric-1.21.8-2.0.0.jar` from GitHub Actions run `25380059174`.
+2. Verify in-game:
+   - lethal damage enters downed state instead of vanilla death
+   - reviver right-click starts revive
+   - revive progress fills without requiring perfect crosshair heartbeat
+   - revived player stands up with configured health
+3. Address any new runtime crash or gameplay bug with follow-up commits and GitHub Actions builds.
 
 ## Local Build Rule
 
