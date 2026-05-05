@@ -40,7 +40,7 @@ Important options:
 
 This project is intended to build only in GitHub Actions. Do not run Gradle locally on the user's PC.
 
-Use the `Build` workflow, then download the `downed-players-fabric-1.21.8` artifact from the workflow run. The mod jar is uploaded from `build/libs/*.jar`.
+Use the `Build` workflow, then download the `downed-players-lastchance-fabric-1.21.8` artifact from the workflow run. The mod jar is uploaded from `build/libs/*.jar`.
 
 ## Known Limitations
 

@@ -16,7 +16,7 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
 - Fabric Loader: `0.19.2`
 - Java: `21`
 - Gradle distribution planned in wrapper: `8.14.3`
-- Archive base name: `downed-players-fabric-1.21.8`
+- Archive base name: `downed-players-lastchance-fabric-1.21.8`
 
 ## What Was Completed Before Stop
 
@@ -160,7 +160,7 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
   - Java 21
   - Gradle setup action
   - `./gradlew build`
-  - uploads `build/libs/*.jar` as `downed-players-fabric-1.21.8`
+  - uploads `build/libs/*.jar` as `downed-players-lastchance-fabric-1.21.8`
 - Added README:
   - `README.md`
   - usage, config, controls, Actions artifact instructions, limitations
@@ -192,7 +192,7 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
   - URL `https://github.com/pocoi67okak/downed-players-fabric/actions/runs/25378248828`
   - head SHA `535240b1a8411e0fa31a98b6483bed0e72fad49e`
 - Confirmed uploaded Actions artifact:
-  - name `downed-players-fabric-1.21.8`
+  - name `downed-players-lastchance-fabric-1.21.8`
   - artifact id `6807136577`
   - digest `sha256:4303aaf35c69fa45e7e9ae70bbec9ea966ae1dfaa2a1bebd9540b880b566d7d3`
   - expires `2026-08-03T13:07:47Z`

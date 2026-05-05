@@ -28,5 +28,5 @@ jobs:
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
         with:
-          name: downed-players-fabric-1.21.8
+          name: downed-players-lastchance-fabric-1.21.8
           path: build/libs/*.jar
