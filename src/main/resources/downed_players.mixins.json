@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "com.lastchance.downed.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "EntityDamageMixin",
+    "ItemEntityMixin",
+    "LivingEntityMixin",
+    "PlayerEntityMixin",
+    "ServerPlayNetworkHandlerMixin",
+    "ServerPlayerInteractionManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

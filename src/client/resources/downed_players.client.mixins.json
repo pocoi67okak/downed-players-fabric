@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.lastchance.downed.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ClientPlayerEntityMixin",
+    "InGameHudMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

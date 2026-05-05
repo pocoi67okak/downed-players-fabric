@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "downed_players",
+  "version": "${version}",
+  "name": "Downed Players / Last Chance",
+  "description": "Players enter a downed last-chance state instead of dying immediately from lethal damage.",
+  "authors": [
+    "Last Chance"
+  ],
+  "contact": {
+    "sources": "https://github.com/pocoi67okak/downed-players-fabric"
+  },
+  "license": "MIT",
+  "icon": "assets/downed_players/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.lastchance.downed.DownedPlayersMod"
+    ],
+    "client": [
+      "com.lastchance.downed.client.DownedPlayersClient"
+    ]
+  },
+  "mixins": [
+    "downed_players.mixins.json",
+    {
+      "config": "downed_players.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "minecraft": "1.21.8",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
