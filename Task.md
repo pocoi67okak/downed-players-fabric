@@ -167,18 +167,47 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
 - Initialized a local git repository.
 - Created initial commit:
   - `790aed6 Initial Fabric downed players mod`
+- Created follow-up status commit:
+  - `032acd5 Update task status after initial commit`
+- Created GitHub repository:
+  - `https://github.com/pocoi67okak/downed-players-fabric`
+- Renamed local branch to `main`.
+- Added remote:
+  - `origin https://github.com/pocoi67okak/downed-players-fabric.git`
+- Pushed `main` to GitHub.
+- GitHub Actions build started automatically from push:
+  - run id `25377670058`
+  - job id `74417064260`
+- First GitHub Actions build failed during the `Build` step:
+  - exit code `126`
+  - likely next thing to inspect is executable permission / line endings for `gradlew` on Linux.
+  - workflow also emitted a Node.js 20 deprecation warning for GitHub actions, but that was not the build failure.
+- Fixed GitHub Actions build failures:
+  - `586d7af Make Gradle wrapper executable` fixed Linux `./gradlew: Permission denied`.
+  - `8bcec06 Use Gradle 8 compatible Fabric Loom` changed Fabric Loom from `1.16.1` to `1.13.6` because `1.16.1` requires Gradle plugin API `9.4.0`, while the wrapper is Gradle `8.14.3`.
+  - `e3c6ad2 Allow Loom to add remap repositories` removed strict `RepositoriesMode.FAIL_ON_PROJECT_REPOS`, which blocked Loom's own remap repositories.
+  - `535240b Invoke entity dimension refresh through mixin` replaced direct protected `Entity#reinitDimensions()` calls with a Mixin invoker.
+- Confirmed GitHub Actions build succeeded:
+  - run id `25378248828`
+  - URL `https://github.com/pocoi67okak/downed-players-fabric/actions/runs/25378248828`
+  - head SHA `535240b1a8411e0fa31a98b6483bed0e72fad49e`
+- Confirmed uploaded Actions artifact:
+  - name `downed-players-fabric-1.21.8`
+  - artifact id `6807136577`
+  - digest `sha256:4303aaf35c69fa45e7e9ae70bbec9ea966ae1dfaa2a1bebd9540b880b566d7d3`
+  - expires `2026-08-03T13:07:47Z`
 
 ## Current Stop Point
 
-Core implementation files now exist and are committed locally. Work stopped before GitHub Actions compilation, so there may still be compile errors that must be discovered by a GitHub Actions run, not local Gradle.
+Core implementation files now exist, are pushed to GitHub, and GitHub Actions builds successfully.
 
-The next practical step is to create/push the GitHub repository, start the Actions build, then fix any compile failures by follow-up commits.
+The next practical step, if more work is requested, is in-game QA on a Fabric 1.21.8 server/client using the Actions artifact. No local Gradle build was run.
 
 No local Gradle build was run.
 
-The local git repository exists. No GitHub repository was created or pushed yet.
+The local git repository exists, branch `main` tracks `origin/main`, and the GitHub repository exists at `https://github.com/pocoi67okak/downed-players-fabric`.
 
-No GitHub Actions run has been started yet.
+GitHub Actions run `25378248828` completed successfully and uploaded the mod artifact.
 
 ## Important Implementation Notes Already Discovered
 
@@ -200,11 +229,8 @@ No GitHub Actions run has been started yet.
 
 ## Remaining Work
 
-1. Create the GitHub repository.
-2. Push the branch.
-3. Start GitHub Actions build.
-4. Fix any GitHub Actions compile errors by committing and pushing follow-up fixes until the workflow succeeds.
-5. Download/confirm the uploaded Actions artifact once the workflow is green.
+1. Optional: perform in-game QA on a Fabric 1.21.8 server/client with the uploaded Actions artifact.
+2. Optional: address any gameplay bugs found during runtime testing with follow-up commits and GitHub Actions builds.
 
 ## Local Build Rule
 
