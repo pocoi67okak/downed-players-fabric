@@ -164,16 +164,19 @@ Important constraint: **do not build, test, or run Gradle locally on the user's 
 - Added README:
   - `README.md`
   - usage, config, controls, Actions artifact instructions, limitations
+- Initialized a local git repository.
+- Created initial commit:
+  - `790aed6 Initial Fabric downed players mod`
 
 ## Current Stop Point
 
-Core implementation files now exist. Work stopped before GitHub Actions compilation, so there may still be compile errors that must be discovered by a GitHub Actions run, not local Gradle.
+Core implementation files now exist and are committed locally. Work stopped before GitHub Actions compilation, so there may still be compile errors that must be discovered by a GitHub Actions run, not local Gradle.
 
-The next practical step is to initialize git, commit the current implementation, create/push the GitHub repository, start the Actions build, then fix any compile failures by follow-up commits.
+The next practical step is to create/push the GitHub repository, start the Actions build, then fix any compile failures by follow-up commits.
 
 No local Gradle build was run.
 
-No GitHub repository was initialized or pushed yet.
+The local git repository exists. No GitHub repository was created or pushed yet.
 
 No GitHub Actions run has been started yet.
 
@@ -197,13 +200,11 @@ No GitHub Actions run has been started yet.
 
 ## Remaining Work
 
-1. Do a final source-level sanity pass without local Gradle.
-2. Initialize git repository.
-3. Create the GitHub repository.
-4. Push the branch.
-5. Start GitHub Actions build.
-6. Fix any GitHub Actions compile errors by committing and pushing follow-up fixes until the workflow succeeds.
-7. Download/confirm the uploaded Actions artifact once the workflow is green.
+1. Create the GitHub repository.
+2. Push the branch.
+3. Start GitHub Actions build.
+4. Fix any GitHub Actions compile errors by committing and pushing follow-up fixes until the workflow succeeds.
+5. Download/confirm the uploaded Actions artifact once the workflow is green.
 
 ## Local Build Rule
 
