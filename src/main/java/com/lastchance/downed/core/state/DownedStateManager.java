@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.lastchance.downed.DownedPlayersMod;
 import com.lastchance.downed.config.DownedPlayersConfig;
+import com.lastchance.downed.mixin.EntityAccessor;
 import com.lastchance.downed.network.payload.ReviveProgressPayload;
 import com.lastchance.downed.network.payload.StateSyncPayload;
 import com.lastchance.downed.screen.gui.DownedLootInventory;
@@ -147,7 +148,7 @@ public final class DownedStateManager {
 
         player.setHealth(1.0F);
         player.setPose(EntityPose.SLEEPING);
-        player.reinitDimensions();
+        reinitDimensions(player);
         lockMovement(player);
         cancelRevivesFor(player.getUuid());
         sync(player);
@@ -237,7 +238,7 @@ public final class DownedStateManager {
         cancelRevivesFor(player.getUuid());
         if (!DownedPlayersConfig.get().preserve_downed_state_on_logout && downed.remove(player.getUuid()) != null) {
             player.setPose(EntityPose.STANDING);
-            player.reinitDimensions();
+            reinitDimensions(player);
             dirty = true;
         }
     }
@@ -296,7 +297,7 @@ public final class DownedStateManager {
 
         target.setHealth((float) DownedPlayersConfig.get().hp_after_revive);
         target.setPose(EntityPose.STANDING);
-        target.reinitDimensions();
+        reinitDimensions(target);
         sync(target);
         sendReviveProgress(reviver, false, 1.0F);
 
@@ -319,7 +320,7 @@ public final class DownedStateManager {
         deathBypass.add(player.getUuid());
         try {
             player.setPose(EntityPose.STANDING);
-            player.reinitDimensions();
+            reinitDimensions(player);
             player.damage((ServerWorld) player.getWorld(), player.getDamageSources().genericKill(), Float.MAX_VALUE);
         } finally {
             deathBypass.remove(player.getUuid());
@@ -392,6 +393,10 @@ public final class DownedStateManager {
         player.velocityModified = true;
         player.fallDistance = 0.0F;
         player.setSprinting(false);
+    }
+
+    private void reinitDimensions(ServerPlayerEntity player) {
+        ((EntityAccessor) player).downed_players$reinitDimensions();
     }
 
     private static long now() {
