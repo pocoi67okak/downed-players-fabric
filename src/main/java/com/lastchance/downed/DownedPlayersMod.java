@@ -86,8 +86,6 @@ public final class DownedPlayersMod implements ModInitializer {
                     && DownedStateManager.isDowned(target)) {
                 if (player.isSneaking()) {
                     DownedStateManager.get().openLoot(reviver, target);
-                } else {
-                    DownedStateManager.get().beginRevive(reviver, target);
                 }
 
                 return ActionResult.SUCCESS;

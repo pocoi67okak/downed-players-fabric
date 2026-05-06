@@ -38,6 +38,8 @@ import java.util.Set;
 import java.util.UUID;
 
 public final class DownedStateManager {
+    private static final long REVIVE_HEARTBEAT_TIMEOUT_MILLIS = 750L;
+    private static final double REVIVE_MOVEMENT_RESET_DISTANCE_SQUARED = 1.0E-6D;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path STATE_PATH = FabricLoader.getInstance().getConfigDir().resolve("downed_players_state.json");
     private static final DownedStateManager INSTANCE = new DownedStateManager();
@@ -176,13 +178,12 @@ public final class DownedStateManager {
         return ActionResult.SUCCESS;
     }
 
-    public void beginRevive(ServerPlayerEntity reviver, ServerPlayerEntity target) {
+    private void beginRevive(ServerPlayerEntity reviver, ServerPlayerEntity target, long now) {
         if (!canRevive(reviver, target)) {
             return;
         }
 
-        long now = now();
-        reviveSessions.put(reviver.getUuid(), new ReviveSession(reviver.getUuid(), target.getUuid(), now, now));
+        reviveSessions.put(reviver.getUuid(), new ReviveSession(reviver.getUuid(), target.getUuid(), now, now, reviver.getPos()));
         sendReviveProgress(reviver, true, 0.0F);
 
         if (DownedPlayersConfig.get().enable_chat_status_messages) {
@@ -192,11 +193,12 @@ public final class DownedStateManager {
     }
 
     public void heartbeatRevive(ServerPlayerEntity reviver, UUID targetUuid) {
+        long now = now();
         ReviveSession session = reviveSessions.get(reviver.getUuid());
         if (session == null || !session.targetUuid().equals(targetUuid)) {
             ServerPlayerEntity target = server == null ? null : server.getPlayerManager().getPlayer(targetUuid);
             if (target != null) {
-                beginRevive(reviver, target);
+                beginRevive(reviver, target, now);
             }
 
             return;
@@ -208,7 +210,11 @@ public final class DownedStateManager {
             return;
         }
 
-        long now = now();
+        if (hasReviverMoved(reviver, session)) {
+            cancelRevive(reviver.getUuid());
+            return;
+        }
+
         session.lastHeartbeatMillis = now;
         float progress = reviveProgress(session, now);
         sendReviveProgress(reviver, true, progress);
@@ -338,7 +344,9 @@ public final class DownedStateManager {
             ServerPlayerEntity reviver = server.getPlayerManager().getPlayer(session.reviverUuid());
             ServerPlayerEntity target = server.getPlayerManager().getPlayer(session.targetUuid());
 
-            if (reviver == null || target == null || !canRevive(reviver, target)) {
+            if (reviver == null || target == null || !canRevive(reviver, target)
+                    || now - session.lastHeartbeatMillis() > REVIVE_HEARTBEAT_TIMEOUT_MILLIS
+                    || hasReviverMoved(reviver, session)) {
                 sendReviveProgress(session.reviverUuid(), false, 0.0F);
                 iterator.remove();
                 continue;
@@ -356,7 +364,7 @@ public final class DownedStateManager {
     }
 
     private boolean canRevive(ServerPlayerEntity reviver, ServerPlayerEntity target) {
-        if (reviver.equals(target) || isDowned(reviver) || !isDowned(target)) {
+        if (reviver.equals(target) || reviver.isSneaking() || isDowned(reviver) || !isDowned(target)) {
             return false;
         }
 
@@ -367,6 +375,10 @@ public final class DownedStateManager {
     private float reviveProgress(ReviveSession session, long now) {
         long requiredMillis = DownedPlayersConfig.get().revive_duration_seconds * 1000L;
         return Math.min(1.0F, (float) (now - session.startedAtMillis()) / (float) requiredMillis);
+    }
+
+    private boolean hasReviverMoved(ServerPlayerEntity reviver, ReviveSession session) {
+        return reviver.getPos().squaredDistanceTo(session.reviverStartPos()) > REVIVE_MOVEMENT_RESET_DISTANCE_SQUARED;
     }
 
     private void cancelRevive(UUID reviverUuid) {
@@ -416,13 +428,15 @@ public final class DownedStateManager {
         private final UUID reviverUuid;
         private final UUID targetUuid;
         private final long startedAtMillis;
+        private final Vec3d reviverStartPos;
         private long lastHeartbeatMillis;
 
-        private ReviveSession(UUID reviverUuid, UUID targetUuid, long startedAtMillis, long lastHeartbeatMillis) {
+        private ReviveSession(UUID reviverUuid, UUID targetUuid, long startedAtMillis, long lastHeartbeatMillis, Vec3d reviverStartPos) {
             this.reviverUuid = reviverUuid;
             this.targetUuid = targetUuid;
             this.startedAtMillis = startedAtMillis;
             this.lastHeartbeatMillis = lastHeartbeatMillis;
+            this.reviverStartPos = reviverStartPos;
         }
 
         private UUID reviverUuid() {
@@ -435,6 +449,14 @@ public final class DownedStateManager {
 
         private long startedAtMillis() {
             return startedAtMillis;
+        }
+
+        private long lastHeartbeatMillis() {
+            return lastHeartbeatMillis;
+        }
+
+        private Vec3d reviverStartPos() {
+            return reviverStartPos;
         }
     }
 }

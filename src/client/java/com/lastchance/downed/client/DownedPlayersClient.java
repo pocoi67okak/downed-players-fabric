@@ -18,6 +18,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.hit.EntityHitResult;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.UUID;
+
 public final class DownedPlayersClient implements ClientModInitializer {
     private static KeyBinding surrenderKey;
     private static boolean localDowned;
@@ -27,6 +29,7 @@ public final class DownedPlayersClient implements ClientModInitializer {
     private static boolean reviveActive;
     private static float reviveProgress;
     private static int heartbeatCooldownTicks;
+    private static UUID reviveTargetUuid;
 
     public static boolean isLocalDowned() {
         return localDowned;
@@ -73,13 +76,21 @@ public final class DownedPlayersClient implements ClientModInitializer {
             heartbeatCooldownTicks--;
         }
 
-        if (heartbeatCooldownTicks == 0 && client.options.useKey.isPressed()
-                && client.crosshairTarget instanceof EntityHitResult hitResult) {
+        if (!client.options.useKey.isPressed() || client.player.isSneaking() || client.currentScreen != null) {
+            reviveTargetUuid = null;
+            return;
+        }
+
+        if (client.crosshairTarget instanceof EntityHitResult hitResult) {
             Entity entity = hitResult.getEntity();
-            if (entity instanceof PlayerEntity target && ClientPlayNetworking.canSend(ReviveHeartbeatPayload.ID)) {
-                ClientPlayNetworking.send(new ReviveHeartbeatPayload(target.getUuid()));
-                heartbeatCooldownTicks = 4;
+            if (entity instanceof PlayerEntity target) {
+                reviveTargetUuid = target.getUuid();
             }
+        }
+
+        if (heartbeatCooldownTicks == 0 && reviveTargetUuid != null && ClientPlayNetworking.canSend(ReviveHeartbeatPayload.ID)) {
+            ClientPlayNetworking.send(new ReviveHeartbeatPayload(reviveTargetUuid));
+            heartbeatCooldownTicks = 4;
         }
     }
 
