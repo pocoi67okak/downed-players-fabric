@@ -1,0 +1,6 @@
+{
+  "item.downed_players.detector": "Detector",
+  "key.downed_players.hands_up": "Raise / lower hands",
+  "key.downed_players.surrender": "Surrender",
+  "category.downed_players": "Downed Players"
+}

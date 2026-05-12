@@ -1,0 +1,6 @@
+{
+  "item.downed_players.detector": "Детектор",
+  "key.downed_players.hands_up": "Поднять / опустить руки",
+  "key.downed_players.surrender": "Сдаться",
+  "category.downed_players": "Downed Players"
+}

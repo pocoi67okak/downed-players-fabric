@@ -47,6 +47,7 @@ public final class DownedStateManager {
     private final Map<UUID, DownedState> downed = new HashMap<>();
     private final Map<UUID, ReviveSession> reviveSessions = new HashMap<>();
     private final Map<UUID, UUID> lootLocks = new HashMap<>();
+    private final Set<UUID> handsUp = new HashSet<>();
     private final Set<UUID> deathBypass = new HashSet<>();
     private MinecraftServer server;
     private boolean dirty;
@@ -66,9 +67,14 @@ public final class DownedStateManager {
         return player != null && INSTANCE.deathBypass.contains(player.getUuid());
     }
 
+    public static boolean isHandsUp(PlayerEntity player) {
+        return player != null && INSTANCE.handsUp.contains(player.getUuid());
+    }
+
     public void load(MinecraftServer server) {
         this.server = server;
         downed.clear();
+        handsUp.clear();
 
         if (!DownedPlayersConfig.get().preserve_downed_state_on_server_restart || !Files.exists(STATE_PATH)) {
             return;
@@ -152,6 +158,7 @@ public final class DownedStateManager {
         reinitDimensions(player);
         lockMovement(player);
         cancelRevivesFor(player.getUuid());
+        closeLootViewsFor(player.getUuid());
         sync(player);
 
         if (DownedPlayersConfig.get().enable_chat_status_messages) {
@@ -167,6 +174,27 @@ public final class DownedStateManager {
         }
 
         killFinally(player, "surrender");
+    }
+
+    public void toggleHandsUp(ServerPlayerEntity player) {
+        if (player == null || isDowned(player) || player.isSpectator()) {
+            return;
+        }
+
+        UUID uuid = player.getUuid();
+        boolean raised;
+        if (handsUp.remove(uuid)) {
+            raised = false;
+            closeLootViewsFor(uuid);
+        } else {
+            handsUp.add(uuid);
+            raised = true;
+        }
+
+        player.closeHandledScreen();
+        if (DownedPlayersConfig.get().enable_chat_status_messages) {
+            player.sendMessage(DownedText.prefix(Text.literal(raised ? "Hands raised." : "Hands lowered.")), true);
+        }
     }
 
     public ActionResult tryFinishDowned(PlayerEntity attacker, ServerPlayerEntity target) {
@@ -237,10 +265,12 @@ public final class DownedStateManager {
         }
 
         lootLocks.entrySet().removeIf(entry -> entry.getKey().equals(playerUuid) || entry.getValue().equals(playerUuid));
+        handsUp.remove(playerUuid);
     }
 
     public void handleDisconnect(ServerPlayerEntity player) {
         cancelRevivesFor(player.getUuid());
+        closeLootViewsFor(player.getUuid());
         if (!DownedPlayersConfig.get().preserve_downed_state_on_logout && downed.remove(player.getUuid()) != null) {
             player.setPose(EntityPose.STANDING);
             reinitDimensions(player);
@@ -259,6 +289,30 @@ public final class DownedStateManager {
             return;
         }
 
+        UUID existing = lootLocks.get(target.getUuid());
+        if (!config.allow_multiple_looters_at_once && existing != null && !existing.equals(looter.getUuid())) {
+            looter.sendMessage(DownedText.prefix(Text.literal("Another player is already looting this inventory.")), true);
+            return;
+        }
+
+        openLootScreen(looter, target);
+    }
+
+    public void openDetectorInspection(ServerPlayerEntity looter, ServerPlayerEntity target) {
+        if (looter.equals(target) || isDowned(looter) || isDowned(target) || !isHandsUp(target)) {
+            return;
+        }
+
+        double maxDistanceSquared = DownedPlayersConfig.get().loot_open_distance_blocks * DownedPlayersConfig.get().loot_open_distance_blocks;
+        if (looter.squaredDistanceTo(target) > maxDistanceSquared) {
+            return;
+        }
+
+        openLootScreen(looter, target);
+    }
+
+    private void openLootScreen(ServerPlayerEntity looter, ServerPlayerEntity target) {
+        DownedPlayersConfig config = DownedPlayersConfig.get();
         UUID existing = lootLocks.get(target.getUuid());
         if (!config.allow_multiple_looters_at_once && existing != null && !existing.equals(looter.getUuid())) {
             looter.sendMessage(DownedText.prefix(Text.literal("Another player is already looting this inventory.")), true);
@@ -334,6 +388,20 @@ public final class DownedStateManager {
         if (DownedPlayersConfig.get().enable_chat_status_messages) {
             player.sendMessage(DownedText.prefix(Text.literal("You died from " + reason + ".")), false);
         }
+    }
+
+    private void closeLootViewsFor(UUID targetUuid) {
+        if (server == null) {
+            return;
+        }
+
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            if (player.currentScreenHandler instanceof DownedLootScreenHandler handler && handler.isViewingTarget(targetUuid)) {
+                player.closeHandledScreen();
+            }
+        }
+
+        lootLocks.remove(targetUuid);
     }
 
     private void tickRevives(MinecraftServer server, long now) {

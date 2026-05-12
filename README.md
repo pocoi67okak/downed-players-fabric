@@ -8,6 +8,7 @@ Fabric mod for Minecraft Java Edition 1.21.8. Lethal damage puts players into a 
 - Downed players are locked in place and blocked from attacking, using items, breaking blocks, opening inventories, dropping items, picking up items, and changing hotbar slots.
 - Other players can hold right click on a downed player to revive them.
 - Shift + right click opens a 9x6 loot view for the downed player's inventory.
+- Players can press `H` to raise/lower their hands. Another player holding a Detector can right click them to inspect the same 9x6 inventory view.
 - Optional finishing, surrender, timeout death, chat messages, and persisted downed state.
 - Client HUD for downed timer, surrender prompt, and revive progress.
 
@@ -35,6 +36,12 @@ Important options:
 - Hold right click on a downed player: Revive.
 - Shift + right click on a downed player: Loot inventory.
 - Press `R` while downed: Surrender, if enabled.
+- Press `H`: Raise/lower hands. If a handled inventory screen is open, `H` closes it too.
+- Hold Detector and right click a player with raised hands: Inspect that player's inventory.
+
+## Detector Texture
+
+The Detector currently uses the vanilla recovery compass texture as a fallback. To give it a custom texture, create a 16x16 PNG named `detector.png` at `src/main/resources/assets/downed_players/textures/item/detector.png`, then change `src/main/resources/assets/downed_players/models/item/detector.json` so `layer0` is `downed_players:item/detector`.
 
 ## Building
 

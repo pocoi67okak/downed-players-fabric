@@ -45,6 +45,7 @@ Packet codec notes:
 
 - `PacketCodec.ofStatic(Writer, Reader)` is available.
 - `RegistryByteBuf` supports `readBoolean/writeBoolean`, `readVarLong/writeVarLong`, `readUuid/writeUuid`, and inherits standard byte buf methods such as `readFloat/writeFloat`.
+- Empty C2S action packets can use a record with `PacketCodec.ofStatic(...)`; the reader returns a new payload instance and the writer is empty. Existing examples: `SurrenderPayload`, `HandsUpTogglePayload`.
 
 ## Fabric Events
 
@@ -106,6 +107,8 @@ Player:
 
 - `PlayerEntity#getInventory(): PlayerInventory`
 - `PlayerEntity#openHandledScreen(NamedScreenHandlerFactory): OptionalInt`
+- `PlayerEntity#closeHandledScreen()` exists. On `ServerPlayerEntity` it is public and closes the server/client handled screen pair.
+- `PlayerEntity#currentScreenHandler` is public and can be inspected server-side to detect whether a player is currently viewing the mod's loot handler.
 - `PlayerEntity#dropItem(ItemStack, boolean): ItemEntity`
 - `PlayerEntity#dropSelectedItem(boolean): boolean`
 - `PlayerEntity#isCreative()`
@@ -119,6 +122,29 @@ Player inventory:
 - `PlayerInventory#setSelectedSlot(int)`
 - `PlayerInventory#offerOrDrop(ItemStack)`
 - `PlayerInventory` implements `Inventory`; prefer `getInventory().size()/getStack()/setStack()/removeStack()` for broad loot access.
+
+## Items and Recipes
+
+Item registration:
+
+- `RegistryKey.of(RegistryKeys.ITEM, Identifier)` creates the item registry key.
+- `new Item.Settings().registryKey(key)` is required for 1.21.8 item construction; constructing an item without a registry key can trip intrusive-holder validation.
+- `Registry.register(Registries.ITEM, key, item)` registers the item.
+- `ItemStack#isOf(Item)` is available for held-item checks.
+
+Static item group constants in `ItemGroups` are private in 1.21.8 mappings, so avoid relying on direct `ItemGroups.TOOLS` style access unless a later lookup confirms a public API path.
+
+Recipe data:
+
+- Shaped recipe files live under `src/main/resources/data/<modid>/recipe/*.json` for this project/version.
+- Recipe result uses `id`, not older `item`, e.g. `{ "id": "downed_players:detector", "count": 1 }`.
+
+Item model/resource data:
+
+- 1.21.8 uses item definition JSON under `assets/<modid>/items/<item>.json`.
+- The item definition can point at a model: `{ "model": { "type": "minecraft:model", "model": "<modid>:item/<item>" } }`.
+- The model remains under `assets/<modid>/models/item/<item>.json` and can use `parent: "minecraft:item/generated"` with `textures.layer0`.
+- Texture path for a custom 16x16 item PNG is `assets/<modid>/textures/item/<item>.png`.
 
 ## Containers
 
@@ -146,7 +172,15 @@ Key binding:
 - `KeyBinding(String translationKey, InputUtil.Type type, int code, String category)`
 - `KeyBinding#wasPressed()`
 - `KeyBinding#isPressed()`
+- `KeyBinding#matchesKey(int keyCode, int scanCode)` is available and useful from `Screen#keyPressed(...)` mixins because `wasPressed()` is normally handled during client ticks, not while a handled screen consumes keyboard events.
 - `KeyBindingHelper.registerKeyBinding(KeyBinding)`
+
+Screen close/key mixin:
+
+- `Screen#keyPressed(int keyCode, int scanCode, int modifiers): boolean` is a client mixin target.
+- `MinecraftClient#currentScreen` is available client-side.
+- `ClientPlayerEntity#closeHandledScreen()` is public and sends the normal close-screen flow from the client.
+- `HandledScreen<?>` can be used to restrict a custom keybind to inventory/container screens.
 
 HUD mixin target:
 
@@ -162,6 +196,18 @@ Client crosshair/revive heartbeat:
 - `EntityHitResult#getEntity()`
 - `MinecraftClient#options.useKey`
 
+## Detector / Hands-Up Flow
+
+Current implementation notes for version `5.0.0`:
+
+- `H` sends `HandsUpTogglePayload` C2S.
+- The server stores raised-hands state in an in-memory `Set<UUID>`; it is intentionally not persisted across restart.
+- If a player lowers hands or becomes downed, any open `DownedLootScreenHandler` viewing that player is closed server-side.
+- A player holding `ModItems.DETECTOR` can right click another non-downed player with raised hands to open the same `DownedLootScreenHandler` used for downed-player looting.
+- Detector access reuses `loot_open_distance_blocks` and `allow_multiple_looters_at_once`.
+- Detector access does not require `allow_full_inventory_looting`; that config remains scoped to downed-player Shift + right click looting.
+- There is no arm-raise animation yet. The server state is authoritative, and the only player-facing feedback is the actionbar chat message when status messages are enabled.
+
 ## Current Design Decisions
 
 - Do not use Minecraft `PersistentState` yet; 1.21.8 moved toward codec-based `PersistentStateType`, which is higher compile risk without local Gradle checks.
@@ -170,6 +216,7 @@ Client crosshair/revive heartbeat:
 - Use server-enforced movement/action blocking as authority. Client HUD and local drop blocking are convenience only.
 - Use vanilla `EntityPose.SLEEPING` as the lying visual fallback. This is not a custom animation and may render imperfectly, but the server lock is authoritative.
 - `preserve_downed_state_on_logout=false` clears downed state during `ServerPlayConnectionEvents.DISCONNECT`; default config keeps it.
+- Reuse `DownedLootInventory` and `DownedLootScreenHandler` for Detector inspection instead of introducing a second inventory screen.
 
 ## Do Not Run Locally
 

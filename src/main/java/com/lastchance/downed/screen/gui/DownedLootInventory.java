@@ -6,6 +6,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.UUID;
+
 public final class DownedLootInventory implements Inventory {
     private static final int GENERIC_9X6_SIZE = 54;
     private static final ItemStack PLACEHOLDER = new ItemStack(Items.LIGHT_GRAY_STAINED_GLASS_PANE);
@@ -83,5 +85,9 @@ public final class DownedLootInventory implements Inventory {
 
     public boolean isBackedSlot(int slot) {
         return slot >= 0 && slot < target.getInventory().size();
+    }
+
+    public UUID getTargetUuid() {
+        return target.getUuid();
     }
 }

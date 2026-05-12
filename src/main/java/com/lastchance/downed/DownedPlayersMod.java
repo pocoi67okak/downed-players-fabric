@@ -2,6 +2,8 @@ package com.lastchance.downed;
 
 import com.lastchance.downed.config.DownedPlayersConfig;
 import com.lastchance.downed.core.state.DownedStateManager;
+import com.lastchance.downed.item.ModItems;
+import com.lastchance.downed.network.payload.HandsUpTogglePayload;
 import com.lastchance.downed.network.payload.ReviveHeartbeatPayload;
 import com.lastchance.downed.network.payload.ReviveProgressPayload;
 import com.lastchance.downed.network.payload.StateSyncPayload;
@@ -34,6 +36,7 @@ public final class DownedPlayersMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModItems.register();
         DownedPlayersConfig.load();
         registerPayloads();
         registerServerReceivers();
@@ -45,6 +48,7 @@ public final class DownedPlayersMod implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(ReviveProgressPayload.ID, ReviveProgressPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SurrenderPayload.ID, SurrenderPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(ReviveHeartbeatPayload.ID, ReviveHeartbeatPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(HandsUpTogglePayload.ID, HandsUpTogglePayload.CODEC);
     }
 
     private static void registerServerReceivers() {
@@ -52,6 +56,8 @@ public final class DownedPlayersMod implements ModInitializer {
                 DownedStateManager.get().surrender(context.player()));
         ServerPlayNetworking.registerGlobalReceiver(ReviveHeartbeatPayload.ID, (payload, context) ->
                 DownedStateManager.get().heartbeatRevive(context.player(), payload.targetUuid()));
+        ServerPlayNetworking.registerGlobalReceiver(HandsUpTogglePayload.ID, (payload, context) ->
+                DownedStateManager.get().toggleHandsUp(context.player()));
     }
 
     private static void registerServerEvents() {
@@ -88,6 +94,13 @@ public final class DownedPlayersMod implements ModInitializer {
                     DownedStateManager.get().openLoot(reviver, target);
                 }
 
+                return ActionResult.SUCCESS;
+            }
+
+            if (!world.isClient() && player instanceof ServerPlayerEntity looter && entity instanceof ServerPlayerEntity target
+                    && player.getStackInHand(hand).isOf(ModItems.DETECTOR)
+                    && DownedStateManager.isHandsUp(target)) {
+                DownedStateManager.get().openDetectorInspection(looter, target);
                 return ActionResult.SUCCESS;
             }
 

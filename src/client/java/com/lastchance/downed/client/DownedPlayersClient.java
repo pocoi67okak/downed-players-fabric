@@ -1,5 +1,6 @@
 package com.lastchance.downed.client;
 
+import com.lastchance.downed.network.payload.HandsUpTogglePayload;
 import com.lastchance.downed.network.payload.ReviveHeartbeatPayload;
 import com.lastchance.downed.network.payload.ReviveProgressPayload;
 import com.lastchance.downed.network.payload.StateSyncPayload;
@@ -10,6 +11,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.Entity;
@@ -22,6 +24,7 @@ import java.util.UUID;
 
 public final class DownedPlayersClient implements ClientModInitializer {
     private static KeyBinding surrenderKey;
+    private static KeyBinding handsUpKey;
     private static boolean localDowned;
     private static long enteredAtMillis;
     private static long deadlineMillis;
@@ -41,6 +44,12 @@ public final class DownedPlayersClient implements ClientModInitializer {
                 "key.downed_players.surrender",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_R,
+                "category.downed_players"
+        ));
+        handsUpKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.downed_players.hands_up",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_H,
                 "category.downed_players"
         ));
 
@@ -72,6 +81,12 @@ public final class DownedPlayersClient implements ClientModInitializer {
             }
         }
 
+        while (handsUpKey.wasPressed()) {
+            if (client.currentScreen == null) {
+                sendHandsUpToggle(client, false);
+            }
+        }
+
         if (heartbeatCooldownTicks > 0) {
             heartbeatCooldownTicks--;
         }
@@ -91,6 +106,28 @@ public final class DownedPlayersClient implements ClientModInitializer {
         if (heartbeatCooldownTicks == 0 && reviveTargetUuid != null && ClientPlayNetworking.canSend(ReviveHeartbeatPayload.ID)) {
             ClientPlayNetworking.send(new ReviveHeartbeatPayload(reviveTargetUuid));
             heartbeatCooldownTicks = 4;
+        }
+    }
+
+    public static boolean handleHandsUpKeyPressedInScreen(int keyCode, int scanCode) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (handsUpKey == null || client.player == null || !(client.currentScreen instanceof HandledScreen<?>)
+                || !handsUpKey.matchesKey(keyCode, scanCode)) {
+            return false;
+        }
+
+        sendHandsUpToggle(client, true);
+        return true;
+    }
+
+    private static void sendHandsUpToggle(MinecraftClient client, boolean closeHandledScreen) {
+        if (!ClientPlayNetworking.canSend(HandsUpTogglePayload.ID)) {
+            return;
+        }
+
+        ClientPlayNetworking.send(new HandsUpTogglePayload());
+        if (closeHandledScreen && client.player != null) {
+            client.player.closeHandledScreen();
         }
     }
 

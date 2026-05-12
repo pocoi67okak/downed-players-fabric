@@ -6,6 +6,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 
+import java.util.UUID;
+
 public final class DownedLootScreenHandler extends GenericContainerScreenHandler {
     private static final int TOP_INVENTORY_SIZE = 54;
 
@@ -23,5 +25,9 @@ public final class DownedLootScreenHandler extends GenericContainerScreenHandler
         }
 
         return super.quickMove(player, slot);
+    }
+
+    public boolean isViewingTarget(UUID targetUuid) {
+        return inventory.getTargetUuid().equals(targetUuid);
     }
 }
