@@ -41,7 +41,7 @@ Important options:
 
 ## Detector Texture
 
-The Detector currently uses the vanilla recovery compass texture as a fallback. To give it a custom texture, create a 16x16 PNG named `detector.png` at `src/main/resources/assets/downed_players/textures/item/detector.png`, then change `src/main/resources/assets/downed_players/models/item/detector.json` so `layer0` is `downed_players:item/detector`.
+The Detector uses a custom 16x16 texture at `src/main/resources/assets/downed_players/textures/item/detector.png`.
 
 ## Building
 

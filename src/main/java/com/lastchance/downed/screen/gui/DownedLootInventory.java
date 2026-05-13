@@ -1,6 +1,7 @@
 package com.lastchance.downed.screen.gui;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -10,7 +11,8 @@ import java.util.UUID;
 
 public final class DownedLootInventory implements Inventory {
     private static final int GENERIC_9X6_SIZE = 54;
-    private static final ItemStack PLACEHOLDER = new ItemStack(Items.LIGHT_GRAY_STAINED_GLASS_PANE);
+    private static final int VISIBLE_PLAYER_INVENTORY_SIZE = PlayerInventory.OFF_HAND_SLOT + 1;
+    private static final ItemStack PLACEHOLDER = new ItemStack(Items.BARRIER);
 
     private final ServerPlayerEntity target;
     private final Runnable closeCallback;
@@ -27,7 +29,7 @@ public final class DownedLootInventory implements Inventory {
 
     @Override
     public boolean isEmpty() {
-        for (int slot = 0; slot < target.getInventory().size(); slot++) {
+        for (int slot = 0; slot < VISIBLE_PLAYER_INVENTORY_SIZE; slot++) {
             if (!target.getInventory().getStack(slot).isEmpty()) {
                 return false;
             }
@@ -80,11 +82,13 @@ public final class DownedLootInventory implements Inventory {
 
     @Override
     public void clear() {
-        target.getInventory().clear();
+        for (int slot = 0; slot < VISIBLE_PLAYER_INVENTORY_SIZE; slot++) {
+            target.getInventory().setStack(slot, ItemStack.EMPTY);
+        }
     }
 
     public boolean isBackedSlot(int slot) {
-        return slot >= 0 && slot < target.getInventory().size();
+        return slot >= 0 && slot < VISIBLE_PLAYER_INVENTORY_SIZE;
     }
 
     public UUID getTargetUuid() {

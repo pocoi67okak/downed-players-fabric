@@ -198,12 +198,13 @@ Client crosshair/revive heartbeat:
 
 ## Detector / Hands-Up Flow
 
-Current implementation notes for version `5.0.0`:
+Current implementation notes for version `8.0.0`:
 
 - `H` sends `HandsUpTogglePayload` C2S.
 - The server stores raised-hands state in an in-memory `Set<UUID>`; it is intentionally not persisted across restart.
 - If a player lowers hands or becomes downed, any open `DownedLootScreenHandler` viewing that player is closed server-side.
 - A player holding `ModItems.DETECTOR` can right click another non-downed player with raised hands to open the same `DownedLootScreenHandler` used for downed-player looting.
+- The loot view exposes only visible player inventory slots through offhand; body/saddle/empty container slots render as barriers and reject item insertion/removal.
 - Detector access reuses `loot_open_distance_blocks` and `allow_multiple_looters_at_once`.
 - Detector access does not require `allow_full_inventory_looting`; that config remains scoped to downed-player Shift + right click looting.
 - There is no arm-raise animation yet. The server state is authoritative, and the only player-facing feedback is the actionbar chat message when status messages are enabled.
